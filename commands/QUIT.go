@@ -1,8 +1,22 @@
 package commands
 
+import (
+	"FTP-NAS-SV/connection_management"
+	"FTP-NAS-SV/status_codes"
+)
+
 type QUIT struct {
+	conn *connection_management.TcpConnectionWrapper
 }
 
-func (cmd *QUIT) Execute() {
+func NewQUITCommand(conn *connection_management.TcpConnectionWrapper) QUIT {
+	return QUIT{conn: conn}
+}
 
+func (cmd QUIT) Execute() (int, error) {
+	if err := cmd.conn.WriteStatusCode(status_codes.ServiceClosingControlConnection); err != nil {
+		return -1, err
+	}
+
+	return -1, cmd.conn.Close()
 }

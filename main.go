@@ -13,9 +13,15 @@ import (
 	"strings"
 )
 
+const (
+	//UsbDrivePath   = "/home/robert/usb_drives/usb1/"
+	UsbDrivePath = "/home/robert/Downloads"
+)
+
 func handleClientConnection(conn TcpConnectionWrapper, dbManager database.DatabaseManager) error {
 	user := utils.User{}
 	commandExecutor := commands.CommandExecutor{}
+	currentPath := UsbDrivePath
 
 	if err := conn.WriteStatusCode(status_codes.ServiceReadyForNewUser); err != nil {
 		return errors.New(fmt.Sprintln("Error on", conn.RemoteAddr().String(), ",err : ", err))
@@ -32,27 +38,16 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 		case "USER":
 			cmd := commands.NewUSERCommand(messageComponents, &user, dbManager)
 			commandExecutor.SetCommand(cmd)
-			statusCode, err := commandExecutor.ExecuteCommand()
-			if err != nil {
-				_ = conn.WriteStatusCode(status_codes.ServiceNotAvailable)
-				continue
-			}
-			_ = conn.WriteStatusCode(statusCode)
 		case "PASS":
-			cmd := commands.NewPASSCommand(messageComponents, &user, dbManager)
+			cmd := commands.NewPASSCommand(messageComponents, &user, dbManager, &currentPath)
 			commandExecutor.SetCommand(cmd)
-			statusCode, err := commandExecutor.ExecuteCommand()
-			if err != nil {
-				_ = conn.WriteStatusCode(status_codes.ServiceNotAvailable)
-				continue
-			}
-			_ = conn.WriteStatusCode(statusCode)
 		case "CWD":
 			break
 		case "CDUP":
 			break
 		case "QUIT":
-			break
+			cmd := commands.NewQUITCommand(&conn)
+			commandExecutor.SetCommand(cmd)
 		case "TYPE":
 			break
 		case "RMD":
@@ -85,7 +80,18 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 			break
 		case "NOOP":
 			break
+		default:
+			_ = conn.WriteStatusCode(status_codes.SyntaxErrorCommandUnrecognized)
+			continue
 		}
+
+		statusCode, err := commandExecutor.ExecuteCommand()
+		if err != nil {
+			_ = conn.WriteStatusCode(status_codes.ServiceNotAvailable)
+		} else {
+			_ = conn.WriteStatusCode(statusCode)
+		}
+
 	}
 }
 
