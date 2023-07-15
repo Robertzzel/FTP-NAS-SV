@@ -35,31 +35,26 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 		}
 
 		messageComponents := strings.Split(string(message), " ")
+		var cmd commands.Command
 		switch messageComponents[0] {
 		case "USER":
-			cmd := commands.NewUSERCommand(messageComponents, &user, dbManager)
-			commandExecutor.SetCommand(cmd)
+			cmd = commands.NewUSERCommand(messageComponents, &user, dbManager)
 		case "PASS":
-			cmd := commands.NewPASSCommand(messageComponents, &user, dbManager, &currentPath)
-			commandExecutor.SetCommand(cmd)
+			cmd = commands.NewPASSCommand(messageComponents, &user, dbManager, &currentPath)
 		case "CWD":
 			break
 		case "CDUP":
 			break
 		case "QUIT":
-			cmd := commands.NewQUITCommand(&conn)
-			commandExecutor.SetCommand(cmd)
+			cmd = commands.NewQUITCommand(&conn)
 		case "TYPE":
-			cmd := commands.NewTYPECommand(messageComponents, &transmissionType, &user)
-			commandExecutor.SetCommand(cmd)
+			cmd = commands.NewTYPECommand(messageComponents, &transmissionType, &user)
 		case "RMD":
-			cmd := commands.NewRMDCommand(messageComponents, currentPath, &user)
-			commandExecutor.SetCommand(cmd)
+			cmd = commands.NewRMDCommand(messageComponents, currentPath, &user)
 		case "MKD":
-			cmd := commands.NewMKDCommand(messageComponents, currentPath, &user)
-			commandExecutor.SetCommand(cmd)
+			cmd = commands.NewMKDCommand(messageComponents, currentPath, &user)
 		case "PWD":
-			break
+			cmd = commands.NewPWDCommand(&conn, &user, currentPath)
 		case "LIST":
 			break
 		case "STAT":
@@ -83,13 +78,19 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 		case "ALLO":
 			break
 		case "NOOP":
-			break
+			cmd = commands.NewNOOPCommand()
 		default:
 			_ = conn.WriteStatusCode(codes.SyntaxErrorCommandUnrecognized)
 			continue
 		}
 
+		commandExecutor.SetCommand(cmd)
 		statusCode, err := commandExecutor.ExecuteCommand()
+
+		if statusCode == -1 {
+			continue
+		}
+
 		if err != nil {
 			_ = conn.WriteStatusCode(codes.ServiceNotAvailable)
 		} else {
