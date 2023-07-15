@@ -43,6 +43,7 @@ func (cmd PASS) Execute() (int, error) {
 	if isPasswordCorrect {
 		cmd.user.Password = password
 		*cmd.currentPath = filepath.Join(*cmd.currentPath, cmd.user.Name)
+		cmd.user.BasePath = *cmd.currentPath
 		return codes.UserLoggedInProceed, nil
 	}
 
