@@ -9,7 +9,7 @@ import (
 const (
 	Network = "tcp"
 	Host    = "localhost"
-	PIPort  = 21
+	PIPort  = 4040
 )
 
 type ConnectionManager struct {

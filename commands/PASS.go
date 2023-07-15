@@ -8,11 +8,11 @@ import (
 
 type PASS struct {
 	parameters      []string
-	user            utils.User
+	user            *utils.User
 	databaseManager database.DatabaseManager
 }
 
-func NewPASSCommand(parameters []string, user utils.User, dbManager database.DatabaseManager) PASS {
+func NewPASSCommand(parameters []string, user *utils.User, dbManager database.DatabaseManager) PASS {
 	return PASS{
 		parameters:      parameters,
 		user:            user,

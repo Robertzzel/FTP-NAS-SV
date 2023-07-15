@@ -15,7 +15,7 @@ import (
 
 func handleClientConnection(conn TcpConnectionWrapper, dbManager database.DatabaseManager) error {
 	user := utils.User{}
-	commandExecutor := utils.CommandExecutor{}
+	commandExecutor := commands.CommandExecutor{}
 
 	if err := conn.WriteStatusCode(status_codes.ServiceReadyForNewUser); err != nil {
 		return errors.New(fmt.Sprintln("Error on", conn.RemoteAddr().String(), ",err : ", err))
@@ -30,7 +30,7 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 		messageComponents := strings.Split(string(message), " ")
 		switch messageComponents[0] {
 		case "USER":
-			cmd := commands.NewUSERCommand(messageComponents, user, dbManager)
+			cmd := commands.NewUSERCommand(messageComponents, &user, dbManager)
 			commandExecutor.SetCommand(cmd)
 			statusCode, err := commandExecutor.ExecuteCommand()
 			if err != nil {
@@ -39,7 +39,7 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 			}
 			_ = conn.WriteStatusCode(statusCode)
 		case "PASS":
-			cmd := commands.NewPASSCommand(messageComponents, user, dbManager)
+			cmd := commands.NewPASSCommand(messageComponents, &user, dbManager)
 			commandExecutor.SetCommand(cmd)
 			statusCode, err := commandExecutor.ExecuteCommand()
 			if err != nil {

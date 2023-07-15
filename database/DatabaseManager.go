@@ -1,7 +1,6 @@
 package database
 
 import (
-	"FTP-NAS-SV/utils"
 	"database/sql"
 	"errors"
 	_ "github.com/mattn/go-sqlite3"
@@ -27,7 +26,7 @@ func NewDatabase() (DatabaseManager, error) {
 
 func (db *DatabaseManager) Login(username, password string) (bool, error) {
 	var cnt int
-	err := db.QueryRow(`select count(*) from User where Name = ? and Password = ? LIMIT 1`, username, utils.Hash(password)).Scan(&cnt)
+	err := db.QueryRow(`select count(*) from User where Name = ? and Password = ? LIMIT 1`, username, password).Scan(&cnt)
 	if err != nil {
 		return false, errors.New("database problem")
 	}
@@ -40,7 +39,24 @@ func (db *DatabaseManager) CheckUsernameExists(username string) (bool, error) {
 	if err != nil {
 		return false, errors.New("database problem: " + err.Error())
 	}
-	return cnt == 0, nil
+	return cnt != 0, nil
+}
+
+func (db *DatabaseManager) GetAll() ([]string, error) {
+	var name, password string
+	var res []string
+	row, err := db.Query(`select Name, Password from User`)
+	if err != nil {
+		return nil, err
+	}
+	for row.Next() {
+		err := row.Scan(&name, &password)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, name+","+password+";")
+	}
+	return res, nil
 }
 
 func (db *DatabaseManager) migrateDatabase() error {

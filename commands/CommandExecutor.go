@@ -1,9 +1,7 @@
-package utils
-
-import "FTP-NAS-SV/commands"
+package commands
 
 type CommandExecutor struct {
-	command     commands.Command
+	command     Command
 	currentPath string
 }
 
@@ -11,6 +9,6 @@ func (c *CommandExecutor) ExecuteCommand() (int, error) {
 	return c.command.Execute()
 }
 
-func (c *CommandExecutor) SetCommand(command commands.Command) {
+func (c *CommandExecutor) SetCommand(command Command) {
 	c.command = command
 }

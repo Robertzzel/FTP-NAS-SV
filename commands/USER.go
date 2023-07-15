@@ -8,11 +8,11 @@ import (
 
 type USER struct {
 	parameters      []string
-	user            utils.User
+	user            *utils.User
 	databaseManager database.DatabaseManager
 }
 
-func NewUSERCommand(parameters []string, user utils.User, dbManager database.DatabaseManager) USER {
+func NewUSERCommand(parameters []string, user *utils.User, dbManager database.DatabaseManager) USER {
 	return USER{
 		parameters:      parameters,
 		user:            user,
@@ -33,7 +33,7 @@ func (cmd USER) Execute() (int, error) {
 	}
 
 	if userExists {
-		cmd.user.Name = cmd.parameters[0]
+		cmd.user.Name = cmd.parameters[1]
 		return status_codes.UserNameOkayNeedPassword, nil
 	}
 
