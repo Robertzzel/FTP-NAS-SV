@@ -39,7 +39,14 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 			}
 			_ = conn.WriteStatusCode(statusCode)
 		case "PASS":
-			break
+			cmd := commands.NewPASSCommand(messageComponents, user, dbManager)
+			commandExecutor.SetCommand(cmd)
+			statusCode, err := commandExecutor.ExecuteCommand()
+			if err != nil {
+				_ = conn.WriteStatusCode(status_codes.ServiceNotAvailable)
+				continue
+			}
+			_ = conn.WriteStatusCode(statusCode)
 		case "CWD":
 			break
 		case "CDUP":

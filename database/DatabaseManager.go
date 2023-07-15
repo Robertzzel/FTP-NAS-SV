@@ -25,16 +25,13 @@ func NewDatabase() (DatabaseManager, error) {
 	return dm, nil
 }
 
-func (db *DatabaseManager) Login(username, password string) error {
+func (db *DatabaseManager) Login(username, password string) (bool, error) {
 	var cnt int
 	err := db.QueryRow(`select count(*) from User where Name = ? and Password = ? LIMIT 1`, username, utils.Hash(password)).Scan(&cnt)
 	if err != nil {
-		return errors.New("database problem")
+		return false, errors.New("database problem")
 	}
-	if cnt == 0 {
-		return errors.New("user does not exists")
-	}
-	return nil
+	return cnt != 0, nil
 }
 
 func (db *DatabaseManager) CheckUsernameExists(username string) (bool, error) {
