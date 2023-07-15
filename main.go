@@ -1,10 +1,10 @@
 package main
 
 import (
+	"FTP-NAS-SV/codes"
 	"FTP-NAS-SV/commands"
 	. "FTP-NAS-SV/connection_management"
 	"FTP-NAS-SV/database"
-	"FTP-NAS-SV/status_codes"
 	"FTP-NAS-SV/utils"
 	"errors"
 	"fmt"
@@ -22,8 +22,9 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 	user := utils.User{}
 	commandExecutor := commands.CommandExecutor{}
 	currentPath := UsbDrivePath
+	transmissionType := codes.Image
 
-	if err := conn.WriteStatusCode(status_codes.ServiceReadyForNewUser); err != nil {
+	if err := conn.WriteStatusCode(codes.ServiceReadyForNewUser); err != nil {
 		return errors.New(fmt.Sprintln("Error on", conn.RemoteAddr().String(), ",err : ", err))
 	}
 
@@ -49,7 +50,8 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 			cmd := commands.NewQUITCommand(&conn)
 			commandExecutor.SetCommand(cmd)
 		case "TYPE":
-			break
+			cmd := commands.NewTYPECommand(messageComponents, &transmissionType, &user)
+			commandExecutor.SetCommand(cmd)
 		case "RMD":
 			break
 		case "MKD":
@@ -81,13 +83,13 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 		case "NOOP":
 			break
 		default:
-			_ = conn.WriteStatusCode(status_codes.SyntaxErrorCommandUnrecognized)
+			_ = conn.WriteStatusCode(codes.SyntaxErrorCommandUnrecognized)
 			continue
 		}
 
 		statusCode, err := commandExecutor.ExecuteCommand()
 		if err != nil {
-			_ = conn.WriteStatusCode(status_codes.ServiceNotAvailable)
+			_ = conn.WriteStatusCode(codes.ServiceNotAvailable)
 		} else {
 			_ = conn.WriteStatusCode(statusCode)
 		}

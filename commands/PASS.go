@@ -1,8 +1,8 @@
 package commands
 
 import (
+	"FTP-NAS-SV/codes"
 	"FTP-NAS-SV/database"
-	"FTP-NAS-SV/status_codes"
 	"FTP-NAS-SV/utils"
 	"path/filepath"
 )
@@ -25,13 +25,13 @@ func NewPASSCommand(parameters []string, user *utils.User, dbManager database.Da
 
 func (cmd PASS) Execute() (int, error) {
 	if cmd.user.IsLogenIn() {
-		return status_codes.UserLoggedInProceed, nil
+		return codes.UserLoggedInProceed, nil
 	}
 	if len(cmd.parameters) != 2 {
-		return status_codes.SyntaxErrorParametersArguments, nil
+		return codes.SyntaxErrorParametersArguments, nil
 	}
 	if cmd.user.Name == "" {
-		return status_codes.BadSequenceOfCommands, nil
+		return codes.BadSequenceOfCommands, nil
 	}
 
 	password := utils.Hash(cmd.parameters[1])
@@ -43,8 +43,8 @@ func (cmd PASS) Execute() (int, error) {
 	if isPasswordCorrect {
 		cmd.user.Password = password
 		*cmd.currentPath = filepath.Join(*cmd.currentPath, cmd.user.Name)
-		return status_codes.UserLoggedInProceed, nil
+		return codes.UserLoggedInProceed, nil
 	}
 
-	return status_codes.NeedAccountForLogin, nil
+	return codes.NeedAccountForLogin, nil
 }

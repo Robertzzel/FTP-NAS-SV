@@ -1,8 +1,8 @@
 package commands
 
 import (
+	"FTP-NAS-SV/codes"
 	"FTP-NAS-SV/database"
-	"FTP-NAS-SV/status_codes"
 	"FTP-NAS-SV/utils"
 )
 
@@ -22,10 +22,10 @@ func NewUSERCommand(parameters []string, user *utils.User, dbManager database.Da
 
 func (cmd USER) Execute() (int, error) {
 	if cmd.user.IsLogenIn() {
-		return status_codes.UserLoggedInProceed, nil
+		return codes.UserLoggedInProceed, nil
 	}
 	if len(cmd.parameters) != 2 {
-		return status_codes.SyntaxErrorParametersArguments, nil
+		return codes.SyntaxErrorParametersArguments, nil
 	}
 	userExists, err := cmd.databaseManager.CheckUsernameExists(cmd.parameters[1])
 	if err != nil {
@@ -34,8 +34,8 @@ func (cmd USER) Execute() (int, error) {
 
 	if userExists {
 		cmd.user.Name = cmd.parameters[1]
-		return status_codes.UserNameOkayNeedPassword, nil
+		return codes.UserNameOkayNeedPassword, nil
 	}
 
-	return status_codes.NeedAccountForLogin, nil
+	return codes.NeedAccountForLogin, nil
 }

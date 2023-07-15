@@ -1,4 +1,4 @@
-package status_codes
+package codes
 
 const (
 	RestartMarkerReply                = 110
