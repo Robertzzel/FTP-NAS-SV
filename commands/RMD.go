@@ -29,7 +29,7 @@ func (cmd RMD) Execute() (int, error) {
 		return codes.SyntaxErrorParametersArguments, nil
 	}
 
-	var dirPath = ""
+	var dirPath string
 	if path.IsAbs(cmd.parameters[1]) {
 		dirPath = cmd.parameters[1]
 	} else {

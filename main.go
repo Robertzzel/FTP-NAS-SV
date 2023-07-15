@@ -56,7 +56,8 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 			cmd := commands.NewRMDCommand(messageComponents, currentPath, &user)
 			commandExecutor.SetCommand(cmd)
 		case "MKD":
-			break
+			cmd := commands.NewMKDCommand(messageComponents, currentPath, &user)
+			commandExecutor.SetCommand(cmd)
 		case "PWD":
 			break
 		case "LIST":
