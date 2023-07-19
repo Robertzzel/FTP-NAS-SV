@@ -2,8 +2,6 @@ package utils
 
 import (
 	"FTP-NAS-SV/codes"
-	"crypto/tls"
-	"fmt"
 	"log"
 	"net"
 )
@@ -24,17 +22,10 @@ func (user *User) SetUserPASVMode(dTListener net.Listener) {
 	go func() {
 		var err error
 		user.DTListener = dTListener
-		fmt.Println("Waiting for client on ", dTListener.Addr())
 		user.DTConnection, err = dTListener.Accept()
 		if err != nil {
 			_ = user.ClosePassiveMode()
 			log.Println("Error while connecting:", err)
-			return
-		}
-		err = user.DTConnection.(*tls.Conn).Handshake()
-		if err != nil {
-			_ = user.ClosePassiveMode()
-			log.Println("Error while handshakeing:", err)
 			return
 		}
 	}()
