@@ -48,7 +48,8 @@ func (manager *ConnectionManager) ListenForClientsPI() (net.Listener, error) {
 }
 
 func (manager *ConnectionManager) ListenToAvailablePort() (net.Listener, error) {
-	l, err := net.Listen(Network, fmt.Sprintf("%s:0", Host))
+	ip := fmt.Sprintf("%s:0", Host)
+	l, err := net.Listen(Network, ip)
 	if err != nil {
 		return nil, err
 	}

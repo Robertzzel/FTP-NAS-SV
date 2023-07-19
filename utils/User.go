@@ -29,11 +29,13 @@ func (user *User) SetUserPASVMode(dTListener net.Listener) {
 		if err != nil {
 			_ = user.ClosePassiveMode()
 			log.Println("Error while connecting:", err)
+			return
 		}
 		err = user.DTConnection.(*tls.Conn).Handshake()
 		if err != nil {
 			_ = user.ClosePassiveMode()
 			log.Println("Error while handshakeing:", err)
+			return
 		}
 	}()
 }
@@ -50,7 +52,7 @@ func (user *User) PassiveModeState() int {
 
 func (user *User) ClosePassiveMode() error {
 	if user.DTListener != nil {
-		if err := user.DTConnection.Close(); err != nil {
+		if err := user.DTListener.Close(); err != nil {
 			return err
 		}
 		user.DTListener = nil
