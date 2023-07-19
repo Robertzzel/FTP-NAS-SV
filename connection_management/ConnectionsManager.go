@@ -3,7 +3,9 @@ package connection_management
 import (
 	"crypto/tls"
 	"fmt"
+	"io"
 	"net"
+	"net/http"
 )
 
 const (
@@ -16,6 +18,7 @@ type ConnectionManager struct {
 	PIConnection  *net.Listener  // Protocol interpreter connection
 	DTConnections []net.Listener // Data transfer connections
 	tlsConfigs    *tls.Config
+	publicIp      string
 }
 
 func NewConnectionManager(certificateFilePath, keyFilePath string) (ConnectionManager, error) {
@@ -23,21 +26,50 @@ func NewConnectionManager(certificateFilePath, keyFilePath string) (ConnectionMa
 	if err != nil {
 		return ConnectionManager{}, err
 	}
-	config := &tls.Config{Certificates: []tls.Certificate{cert}}
-	return ConnectionManager{tlsConfigs: config}, nil
+	config := &tls.Config{Certificates: []tls.Certificate{cert}, MinVersion: tls.VersionTLS12, MaxVersion: tls.VersionTLS12}
+
+	cm := ConnectionManager{tlsConfigs: config}
+
+	ipString, err := getPublicIP()
+	if err != nil {
+		return ConnectionManager{}, err
+	}
+	cm.publicIp = ipString
+
+	return cm, nil
 }
 
-func (manager *ConnectionManager) ListenForClients() (net.Listener, error) {
-	return tls.Listen(Network, fmt.Sprintf("%s:%d", Host, PIPort), manager.tlsConfigs)
-}
-
-func (manager *ConnectionManager) ListenToAvailablePort() (net.Listener, error) {
-	listener, err := net.Listen(Network, fmt.Sprintf("%s:0", Host))
+func (manager *ConnectionManager) ListenForClientsPI() (net.Listener, error) {
+	l, err := net.Listen(Network, fmt.Sprintf("%s:%d", Host, PIPort))
 	if err != nil {
 		return nil, err
 	}
+	return tls.NewListener(l, manager.tlsConfigs), nil
+}
 
-	manager.DTConnections = append(manager.DTConnections, listener)
+func (manager *ConnectionManager) ListenToAvailablePort() (net.Listener, error) {
+	l, err := net.Listen(Network, fmt.Sprintf("%s:0", Host))
+	if err != nil {
+		return nil, err
+	}
+	return tls.NewListener(l, manager.tlsConfigs), nil
+}
 
-	return listener, nil
+func (manager *ConnectionManager) GetPublicIP() string {
+	return manager.publicIp
+}
+
+func getPublicIP() (string, error) {
+	resp, err := http.Get("https://api.ipify.org?format=text")
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	ip, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return string(ip), nil
 }

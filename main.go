@@ -18,7 +18,7 @@ const (
 	UsbDrivePath = "/home/robert/Downloads"
 )
 
-func handleClientConnection(conn TcpConnectionWrapper, dbManager database.DatabaseManager) error {
+func handleClientConnection(conn TcpConnectionWrapper, dbManager database.DatabaseManager, connManager *ConnectionManager) error {
 	user := utils.User{}
 	commandExecutor := commands.CommandExecutor{}
 	currentPath := UsbDrivePath
@@ -42,9 +42,9 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 		case "PASS":
 			cmd = commands.NewPASSCommand(messageComponents, &user, dbManager, &currentPath)
 		case "CWD":
-			break
+			cmd = commands.NewCWDCommand(messageComponents, &currentPath, &user)
 		case "CDUP":
-			break
+			cmd = commands.NewCDUPCommand(messageComponents, &currentPath, &user)
 		case "QUIT":
 			cmd = commands.NewQUITCommand(&conn)
 		case "TYPE":
@@ -55,6 +55,8 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 			cmd = commands.NewMKDCommand(messageComponents, currentPath, &user)
 		case "PWD":
 			cmd = commands.NewPWDCommand(&conn, &user, currentPath)
+		case "PASV":
+			cmd = commands.NewPASVCommand(&conn, connManager, &user)
 		case "LIST":
 			break
 		case "STAT":
@@ -114,12 +116,13 @@ func main() {
 		panic(err)
 	}
 
-	listener, err := connManager.ListenForClients()
+	listener, err := connManager.ListenForClientsPI()
 	if err != nil {
 		panic(err)
 	}
 	defer listener.Close()
 
+	fmt.Println("listening on ", listener.Addr().String())
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -127,7 +130,7 @@ func main() {
 		}
 
 		go func() {
-			err := handleClientConnection(TcpConnectionWrapper{Conn: conn}, dbManager)
+			err := handleClientConnection(TcpConnectionWrapper{Conn: conn}, dbManager, &connManager)
 			if err != nil {
 				log.Println(err)
 			}
