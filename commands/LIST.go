@@ -49,38 +49,59 @@ func (cmd LIST) Execute() (int, error) {
 		}
 	}
 
-	if _, err := os.Stat(directoryPath); os.IsNotExist(err) {
+	fileInfo, err := os.Stat(directoryPath)
+	if err != nil {
 		return codes.RequestedActionAborted, nil
 	}
 
-	files, err := os.ReadDir(directoryPath)
-	if err != nil {
-		return codes.RequestedActionAborted, err
-	}
-
-	var contents []utils.FileDetails
-	for _, file := range files {
-		fileDetails := utils.FileDetails{Size: 0, Name: file.Name(), IsDir: file.IsDir()}
-		info, err := file.Info()
+	if fileInfo.IsDir() {
+		files, err := os.ReadDir(directoryPath)
 		if err != nil {
-			fileDetails.Size = -1
-		} else {
-			fileDetails.Size = info.Size()
+			return codes.RequestedActionAborted, err
 		}
-		contents = append(contents, fileDetails)
-	}
 
-	sendData, err := json.Marshal(contents)
-	if err != nil {
-		return codes.RequestedActionAborted, err
-	}
+		var contents []utils.FileDetails
+		for _, file := range files {
+			fileDetails := utils.FileDetails{Size: 0, Name: file.Name(), IsDir: file.IsDir()}
+			info, err := file.Info()
+			if err != nil {
+				fileDetails.Size = -1
+			} else {
+				fileDetails.Size = info.Size()
+			}
+			contents = append(contents, fileDetails)
+		}
 
-	if err := cmd.controlConn.WriteStatusCode(codes.DataConnectionAlreadyOpen); err != nil {
-		return codes.ServiceNotAvailable, err
-	}
+		sendData, err := json.Marshal(contents)
+		if err != nil {
+			return codes.RequestedActionAborted, err
+		}
 
-	if err := WriteMessage(cmd.user.DTConnection, sendData); err != nil {
-		return codes.ConnectionClosedTransferAborted, err
+		if err := cmd.controlConn.WriteStatusCode(codes.DataConnectionAlreadyOpen); err != nil {
+			return codes.ServiceNotAvailable, err
+		}
+
+		if err := WriteMessage(cmd.user.DTConnection, sendData); err != nil {
+			return codes.ConnectionClosedTransferAborted, err
+		}
+	} else {
+		fileDetails := utils.FileDetails{
+			Name:  fileInfo.Name(),
+			Size:  fileInfo.Size(),
+			IsDir: fileInfo.IsDir(),
+		}
+		sendData, err := json.Marshal(fileDetails)
+		if err != nil {
+			return codes.RequestedActionAborted, nil
+		}
+
+		if err = cmd.controlConn.WriteStatusCode(codes.DataConnectionAlreadyOpen); err != nil {
+			return codes.ServiceNotAvailable, err
+		}
+
+		if err = WriteMessage(cmd.user.DTConnection, sendData); err != nil {
+			return codes.ConnectionClosedTransferAborted, err
+		}
 	}
 
 	if err := cmd.controlConn.WriteStatusCode(codes.ClosingDataConnection); err != nil {
