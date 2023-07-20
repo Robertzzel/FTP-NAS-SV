@@ -130,7 +130,7 @@ func main() {
 		}
 
 		go func() {
-			err := handleClientConnection(TcpConnectionWrapper{Conn: conn}, dbManager, &connManager)
+			err = handleClientConnection(TcpConnectionWrapper{Conn: conn}, dbManager, &connManager)
 			if err != nil {
 				log.Println(err)
 			}
