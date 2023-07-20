@@ -26,7 +26,7 @@ func (cmd PWD) Execute() (int, error) {
 		return codes.NotLoggedIn, nil
 	}
 
-	if err := cmd.conn.WriteMessage([]byte(fmt.Sprintf("%d %s", codes.PathnameCreated, cmd.currentPath))); err != nil {
+	if err := cmd.conn.WriteMessage([]byte(fmt.Sprintf("%d\n%s", codes.PathnameCreated, cmd.currentPath))); err != nil {
 		return codes.ServiceNotAvailable, err
 	}
 

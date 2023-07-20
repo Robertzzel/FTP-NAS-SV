@@ -40,7 +40,7 @@ func (cmd MKD) Execute() (int, error) {
 		return codes.RequestedActionNotTaken, nil
 	}
 
-	if err := os.MkdirAll(dirPath, 6660); err != nil {
+	if err := os.MkdirAll(dirPath, 0770); err != nil {
 		return codes.RequestedActionNotTaken, nil
 	}
 

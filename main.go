@@ -97,6 +97,7 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 		if err == nil {
 			_ = conn.WriteStatusCode(statusCode)
 		} else {
+			log.Println(err)
 			_ = conn.WriteStatusCode(codes.ServiceNotAvailable)
 		}
 	}

@@ -48,7 +48,7 @@ func (cmd STOU) Execute() (int, error) {
 	}
 	if err = cmd.controlConn.WriteMessage(
 		[]byte(fmt.Sprintf(
-			"%d %s",
+			"%d\n%s",
 			codes.ClosingDataConnection, filepath,
 		))); err != nil {
 		return codes.ServiceNotAvailable, err

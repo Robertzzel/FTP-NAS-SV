@@ -72,9 +72,14 @@ func (cmd LIST) Execute() (int, error) {
 			contents = append(contents, fileDetails)
 		}
 
-		sendData, err := json.Marshal(contents)
-		if err != nil {
-			return codes.RequestedActionAborted, err
+		var sendData []byte
+		if contents != nil {
+			sendData, err = json.Marshal(contents)
+			if err != nil {
+				return codes.RequestedActionAborted, err
+			}
+		} else {
+			sendData = []byte("")
 		}
 
 		if err := cmd.controlConn.WriteStatusCode(codes.DataConnectionAlreadyOpen); err != nil {

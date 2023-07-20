@@ -40,12 +40,13 @@ func (cmd PASS) Execute() (int, error) {
 		return -1, err
 	}
 
-	if isPasswordCorrect {
-		cmd.user.Password = password
-		*cmd.currentPath = filepath.Join(*cmd.currentPath, cmd.user.Name)
-		cmd.user.BasePath = *cmd.currentPath
-		return codes.UserLoggedInProceed, nil
+	if !isPasswordCorrect {
+		return codes.NeedAccountForLogin, nil
 	}
 
-	return codes.NeedAccountForLogin, nil
+	cmd.user.Password = password
+	*cmd.currentPath = filepath.Join(*cmd.currentPath, cmd.user.Name)
+	cmd.user.BasePath = *cmd.currentPath
+
+	return codes.UserLoggedInProceed, nil
 }
