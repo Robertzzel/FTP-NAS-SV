@@ -58,13 +58,13 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 		case "PASV":
 			cmd = commands.NewPASVCommand(&conn, connManager, &user)
 		case "LIST":
-			break
+			cmd = commands.NewLISTCommand(messageComponents, currentPath, conn, &user)
 		case "STAT":
 			break
 		case "HELP":
 			break
 		case "RETR":
-			break
+			cmd = commands.NewRETRCommand(messageComponents, currentPath, conn, &user)
 		case "STOR":
 			break
 		case "STOU":
@@ -89,16 +89,15 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 		commandExecutor.SetCommand(cmd)
 		statusCode, err := commandExecutor.ExecuteCommand()
 
-		if statusCode == -1 {
+		if statusCode == -1 && err == nil {
 			continue
 		}
 
-		if err != nil {
-			_ = conn.WriteStatusCode(codes.ServiceNotAvailable)
-		} else {
+		if err == nil {
 			_ = conn.WriteStatusCode(statusCode)
+		} else {
+			_ = conn.WriteStatusCode(codes.ServiceNotAvailable)
 		}
-
 	}
 }
 
