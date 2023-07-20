@@ -74,7 +74,7 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 		case "RNTO":
 			break
 		case "DELE":
-			break
+			cmd = commands.NewDELECommand(messageComponents, currentPath, &user)
 		case "PORT":
 			break
 		case "ALLO":

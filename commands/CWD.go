@@ -44,7 +44,11 @@ func (cmd CWD) Execute() (int, error) {
 		return codes.RequestedActionNotTaken, nil
 	}
 
-	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+	fileInfo, err := os.Stat(dirPath)
+	if err != nil {
+		return codes.RequestedActionNotTaken, nil
+	}
+	if !fileInfo.IsDir() {
 		return codes.RequestedActionNotTaken, nil
 	}
 
