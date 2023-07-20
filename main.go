@@ -66,7 +66,7 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 		case "RETR":
 			cmd = commands.NewRETRCommand(messageComponents, currentPath, conn, &user)
 		case "STOR":
-			break
+			cmd = commands.NewSTORCommand(messageComponents, currentPath, conn, &user)
 		case "STOU":
 			break
 		case "RNFR":
