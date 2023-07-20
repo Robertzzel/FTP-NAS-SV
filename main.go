@@ -23,6 +23,7 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 	commandExecutor := commands.CommandExecutor{}
 	currentPath := UsbDrivePath
 	transmissionType := codes.Image
+	selectedFileForRenaming := ""
 
 	if err := conn.WriteStatusCode(codes.ServiceReadyForNewUser); err != nil {
 		return errors.New(fmt.Sprintln("Error on", conn.RemoteAddr().String(), ",err : ", err))
@@ -70,9 +71,9 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 		case "STOU":
 			cmd = commands.NewSTOUCommand(messageComponents, currentPath, conn, &user)
 		case "RNFR":
-			break
+			cmd = commands.NewRNFRCommand(messageComponents, currentPath, &user, &selectedFileForRenaming)
 		case "RNTO":
-			break
+			cmd = commands.NewRNTOCommand(messageComponents, currentPath, &user, &selectedFileForRenaming)
 		case "DELE":
 			cmd = commands.NewDELECommand(messageComponents, currentPath, &user)
 		case "PORT":
