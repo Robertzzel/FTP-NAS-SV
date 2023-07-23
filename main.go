@@ -35,7 +35,7 @@ func handleClientConnection(conn TcpConnectionWrapper, dbManager database.Databa
 			return errors.New(fmt.Sprintln("Error on", conn.RemoteAddr().String(), ",err : ", err))
 		}
 
-		messageComponents := strings.Split(string(message), " ")
+		messageComponents := strings.Split(string(message), "\n")
 		var cmd commands.Command
 		switch messageComponents[0] {
 		case "USER":

@@ -5,6 +5,7 @@ import (
 	"FTP-NAS-SV/utils"
 	"os"
 	"path"
+	"strings"
 )
 
 type CDUP struct {
@@ -28,6 +29,9 @@ func (cmd CDUP) Execute() (int, error) {
 
 	newCurrentPath := path.Dir(*cmd.currentPath)
 
+	if !strings.HasPrefix(newCurrentPath, cmd.user.BasePath) {
+		return codes.RequestedActionNotTaken, nil
+	}
 	if _, err := os.Stat(newCurrentPath); os.IsNotExist(err) {
 		return codes.RequestedActionNotTaken, nil
 	}
