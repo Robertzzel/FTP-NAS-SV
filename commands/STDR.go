@@ -41,7 +41,9 @@ func (cmd STDR) Execute() (int, error) {
 		return codes.RequestedActionNotTaken, nil
 	}
 
-	if err := os.MkdirAll(path.Dir(dirPath), 6660); err != nil {
+	pathSplitted := strings.Split(dirPath, "/")
+	dirname := pathSplitted[len(pathSplitted)-1]
+	if err := os.MkdirAll(dirPath+"/", 0770); err != nil {
 		return codes.RequestedActionNotTaken, nil
 	}
 
@@ -62,7 +64,7 @@ func (cmd STDR) Execute() (int, error) {
 		return codes.ConnectionClosedTransferAborted, err
 	}
 
-	if err = utils.Unzip(randomName, cmd.currentPath); err != nil {
+	if err = utils.Unzip(randomName, path.Join(cmd.currentPath, dirname)); err != nil {
 		return codes.RequestedActionNotTaken, nil
 	}
 
