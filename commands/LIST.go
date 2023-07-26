@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -63,6 +64,8 @@ func (cmd LIST) Execute() (int, error) {
 		var contents []utils.FileDetails
 		for _, file := range files {
 			fileDetails := utils.FileDetails{Size: 0, Name: file.Name(), IsDir: file.IsDir()}
+			fileType, _ := utils.GetFileType(filepath.Join(directoryPath, file.Name()))
+			fileDetails.Type = fileType
 			info, err := file.Info()
 			if err != nil {
 				fileDetails.Size = -1
@@ -90,10 +93,12 @@ func (cmd LIST) Execute() (int, error) {
 			return codes.ConnectionClosedTransferAborted, err
 		}
 	} else {
+		fileType, _ := utils.GetFileType(directoryPath)
 		fileDetails := utils.FileDetails{
 			Name:  fileInfo.Name(),
 			Size:  fileInfo.Size(),
 			IsDir: fileInfo.IsDir(),
+			Type:  fileType,
 		}
 		sendData, err := json.Marshal(fileDetails)
 		if err != nil {
