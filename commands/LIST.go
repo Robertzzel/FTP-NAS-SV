@@ -64,8 +64,16 @@ func (cmd LIST) Execute() (int, error) {
 		var contents []utils.FileDetails
 		for _, file := range files {
 			fileDetails := utils.FileDetails{Size: 0, Name: file.Name(), IsDir: file.IsDir()}
+
 			fileType, _ := utils.GetFileType(filepath.Join(directoryPath, file.Name()))
 			fileDetails.Type = fileType
+			if strings.Contains(fileType, "image") {
+				fileDetails.ImageData, err = utils.Resize(filepath.Join(directoryPath, file.Name()))
+				if err != nil {
+					fileDetails.ImageData = nil
+				}
+			}
+
 			info, err := file.Info()
 			if err != nil {
 				fileDetails.Size = -1
